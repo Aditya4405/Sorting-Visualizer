@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Sorting Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'bounce-subtle': 'bounce 0.3s ease-in-out',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shake': 'shake 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '25%': { transform: 'translateX(-5px)' },
+                            '75%': { transform: 'translateX(5px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 min-h-screen transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">
+                🔄 Advanced Sorting Visualizer
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300">
+                Professional sorting algorithm visualization with step-by-step mode
+            </p>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-colors duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Algorithm Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Algorithm
+                    </label>
+                    <select id="algorithmSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300">
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="selection">Selection Sort</option>
+                        <option value="insertion">Insertion Sort</option>
+                        <option value="quick">Quick Sort</option>
+                        <option value="merge">Merge Sort</option>
+                        <option value="heap">Heap Sort</option>
+                        <option value="radix">Radix Sort</option>
+                    </select>
+                </div>
+
+                <!-- Speed Control -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Speed
+                    </label>
+                    <select id="speedSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300">
+                        <option value="300">Slow</option>
+                        <option value="100" selected>Normal</option>
+                        <option value="30">Fast</option>
+                        <option value="5">Lightning</option>
+                    </select>
+                </div>
+
+                <!-- Array Size -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Array Size: <span id="arraySizeValue">50</span>
+                    </label>
+                    <input type="range" id="arraySizeSlider" min="10" max="100" value="50" 
+                           class="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col gap-2">
+                    <button id="generateBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                        🎲 Generate Array
+                    </button>
+                    <button id="sortBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                        ▶️ Start Sorting
+                    </button>
+                </div>
+
+                <!-- Step-by-Step Mode Toggle -->
+                <div class="md:col-span-2 lg:col-span-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Step-by-Step Mode
+                    </label>
+                    <div class="flex gap-2 items-center">
+                        <button id="stepModeToggle" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                            🎯 Enable Step Mode
+                        </button>
+                        <div id="stepControls" class="flex gap-2 hidden">
+                            <button id="stepPrevBtn" class="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                                ⏮️ Prev
+                            </button>
+                            <button id="stepNextBtn" class="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                                ⏭️ Next
+                            </button>
+                            <button id="stepPlayBtn" class="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                                ▶️ Play
+                            </button>
+                            <button id="stepPauseBtn" class="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                                ⏸️ Pause
+                            </button>
+                            <button id="stepResetBtn" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 font-medium">
+                                🔄 Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div id="stepInfo" class="mt-2 text-sm text-gray-600 dark:text-gray-400 hidden">
+                        Current Step: <span id="currentStep">Ready to start</span>
+                    </div>
+                </div>
+
+                <!-- Preset Arrays -->
+                <div class="md:col-span-2 lg:col-span-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Preset Arrays
+                    </label>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="presetRandom" class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-sm transition-colors duration-200">
+                            🎲 Random
+                        </button>
+                        <button id="presetReverse" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition-colors duration-200">
+                            📉 Reverse Sorted
+                        </button>
+                        <button id="presetNearlySorted" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm transition-colors duration-200">
+                            📈 Nearly Sorted
+                        </button>
+                        <button id="presetFewUnique" class="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded text-sm transition-colors duration-200">
+                            🔄 Few Unique
+                        </button>
+                        <button id="presetMountain" class="px-3 py-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-sm transition-colors duration-200">
+                            ⛰️ Mountain
+                        </button>
+                        <button id="presetValley" class="px-3 py-1 bg-teal-500 hover:bg-teal-600 text-white rounded text-sm transition-colors duration-200">
+                            🏔️ Valley
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Array Input -->
+                <div class="md:col-span-2 lg:col-span-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Custom Array Input
+                    </label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="customArrayInput" 
+                               placeholder="e.g., 64, 34, 25, 12, 22, 11, 90"
+                               class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300">
+                        <button id="loadCustomBtn" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors duration-200 font-medium whitespace-nowrap">
+                            📝 Load Custom
+                        </button>
+                        <button id="clearInputBtn" class="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200">
+                            ✕
+                        </button>
+                    </div>
+                    <div id="inputError" class="mt-1 text-sm text-red-600 dark:text-red-400 hidden"></div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Enter numbers (1-100), separated by commas. Max 100 elements.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Footer -->
+            <div class="flex justify-between items-center mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+                <div class="flex items-center space-x-4">
+                    <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200">
+                        <span class="dark:hidden">🌙</span>
+                        <span class="hidden dark:inline">☀️</span>
+                    </button>
+                    <button id="soundToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200">
+                        <span id="soundIcon">🔊</span>
+                    </button>
+                    <button id="showValuesToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200">
+                        <span id="showValuesIcon">🔢</span>
+                    </button>
+                </div>
+
+                <!-- Statistics -->
+                <div class="flex space-x-6 text-sm">
+                    <div class="text-center">
+                        <div class="font-medium text-gray-700 dark:text-gray-300">Comparisons</div>
+                        <div id="comparisons" class="text-xl font-bold text-blue-600 dark:text-blue-400">0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-medium text-gray-700 dark:text-gray-300">Swaps</div>
+                        <div id="swaps" class="text-xl font-bold text-red-600 dark:text-red-400">0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-medium text-gray-700 dark:text-gray-300">Time</div>
+                        <div id="timeElapsed" class="text-xl font-bold text-green-600 dark:text-green-400">0s</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Array Statistics Panel -->
+        <div id="arrayStats" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-colors duration-300">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Array Statistics</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Elements</div>
+                    <div id="statElements" class="text-lg font-bold text-blue-600 dark:text-blue-400">0</div>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Min</div>
+                    <div id="statMin" class="text-lg font-bold text-green-600 dark:text-green-400">-</div>
+                </div>
+                <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Max</div>
+                    <div id="statMax" class="text-lg font-bold text-red-600 dark:text-red-400">-</div>
+                </div>
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Average</div>
+                    <div id="statAvg" class="text-lg font-bold text-yellow-600 dark:text-yellow-400">-</div>
+                </div>
+                <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Median</div>
+                    <div id="statMedian" class="text-lg font-bold text-purple-600 dark:text-purple-400">-</div>
+                </div>
+                <div class="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Duplicates</div>
+                    <div id="statDuplicates" class="text-lg font-bold text-orange-600 dark:text-orange-400">0</div>
+                </div>
+            </div>
+            <div id="duplicatesList" class="mt-4 hidden">
+                <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duplicate Values:</div>
+                <div id="duplicatesContent" class="text-sm text-gray-600 dark:text-gray-400"></div>
+            </div>
+        </div>
+
+        <!-- Visualization Area -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors duration-300">
+            <div id="arrayContainer" class="flex items-end justify-center space-x-1 h-96 overflow-hidden">
+                <!-- Array bars will be generated here -->
+            </div>
+        </div>
+
+        <!-- Algorithm Info -->
+        <div id="algorithmInfo" class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors duration-300">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-3">Algorithm Information</h3>
+            <div id="algorithmDescription" class="text-gray-600 dark:text-gray-300">
+                Select an algorithm to see its description and complexity analysis.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdvancedSortingVisualizer {
+            constructor() {
+                this.array = [];
+                this.originalArray = [];
+                this.arraySize = 50;
+                this.speed = 100;
+                this.isSort = false;
+                this.soundEnabled = true;
+                this.showValues = true;
+                this.comparisons = 0;
+                this.swaps = 0;
+                this.startTime = 0;
+                this.timeInterval = null;
+                this.duplicateIndices = new Map();
+                
+                // Step-by-step mode properties
+                this.stepMode = false;
+                this.stepPaused = true;
+                this.currentStepInfo = '';
+
+                this.initializeElements();
+                this.setupEventListeners();
+                this.generateArray();
+                this.updateAlgorithmInfo();
+            }
+
+            initializeElements() {
+                this.arrayContainer = document.getElementById('arrayContainer');
+                this.algorithmSelect = document.getElementById('algorithmSelect');
+                this.speedSelect = document.getElementById('speedSelect');
+                this.arraySizeSlider = document.getElementById('arraySizeSlider');
+                this.arraySizeValue = document.getElementById('arraySizeValue');
+                this.generateBtn = document.getElementById('generateBtn');
+                this.sortBtn = document.getElementById('sortBtn');
+                this.darkModeToggle = document.getElementById('darkModeToggle');
+                this.soundToggle = document.getElementById('soundToggle');
+                this.showValuesToggle = document.getElementById('showValuesToggle');
+                this.comparisonsEl = document.getElementById('comparisons');
+                this.swapsEl = document.getElementById('swaps');
+                this.timeElapsedEl = document.getElementById('timeElapsed');
+                this.algorithmDescription = document.getElementById('algorithmDescription');
+                this.customArrayInput = document.getElementById('customArrayInput');
+                this.loadCustomBtn = document.getElementById('loadCustomBtn');
+                this.clearInputBtn = document.getElementById('clearInputBtn');
+                this.inputError = document.getElementById('inputError');
+
+                // Step mode elements
+                this.stepModeToggle = document.getElementById('stepModeToggle');
+                this.stepControls = document.getElementById('stepControls');
+                this.stepPrevBtn = document.getElementById('stepPrevBtn');
+                this.stepNextBtn = document.getElementById('stepNextBtn');
+                this.stepPlayBtn = document.getElementById('stepPlayBtn');
+                this.stepPauseBtn = document.getElementById('stepPauseBtn');
+                this.stepResetBtn = document.getElementById('stepResetBtn');
+                this.stepInfo = document.getElementById('stepInfo');
+                this.currentStep = document.getElementById('currentStep');
+
+                // Statistics elements
+                this.statElements = document.getElementById('statElements');
+                this.statMin = document.getElementById('statMin');
+                this.statMax = document.getElementById('statMax');
+                this.statAvg = document.getElementById('statAvg');
+                this.statMedian = document.getElementById('statMedian');
+                this.statDuplicates = document.getElementById('statDuplicates');
+                this.duplicatesList = document.getElementById('duplicatesList');
+                this.duplicatesContent = document.getElementById('duplicatesContent');
+
+                // Preset buttons
+                this.presetButtons = {
+                    random: document.getElementById('presetRandom'),
+                    reverse: document.getElementById('presetReverse'),
+                    nearlySorted: document.getElementById('presetNearlySorted'),
+                    fewUnique: document.getElementById('presetFewUnique'),
+                    mountain: document.getElementById('presetMountain'),
+                    valley: document.getElementById('presetValley')
+                };
+            }
+
+            setupEventListeners() {
+                this.arraySizeSlider.addEventListener('input', (e) => {
+                    this.arraySize = parseInt(e.target.value);
+                    this.arraySizeValue.textContent = this.arraySize;
+                    if (!this.isSort) this.generateArray();
+                });
+
+                this.speedSelect.addEventListener('change', (e) => {
+                    this.speed = parseInt(e.target.value);
+                });
+
+                this.algorithmSelect.addEventListener('change', () => {
+                    this.updateAlgorithmInfo();
+                });
+
+                this.generateBtn.addEventListener('click', () => {
+                    if (!this.isSort) this.generateArray();
+                });
+
+                this.sortBtn.addEventListener('click', () => {
+                    if (!this.isSort) this.startSorting();
+                });
+
+                this.darkModeToggle.addEventListener('click', () => {
+                    document.documentElement.classList.toggle('dark');
+                });
+
+                this.soundToggle.addEventListener('click', () => {
+                    this.soundEnabled = !this.soundEnabled;
+                    document.getElementById('soundIcon').textContent = this.soundEnabled ? '🔊' : '🔇';
+                });
+
+                this.showValuesToggle.addEventListener('click', () => {
+                    this.showValues = !this.showValues;
+                    document.getElementById('showValuesIcon').textContent = this.showValues ? '🔢' : '📊';
+                    this.renderArray();
+                });
+
+                this.loadCustomBtn.addEventListener('click', () => {
+                    if (!this.isSort) this.loadCustomArray();
+                });
+
+                this.clearInputBtn.addEventListener('click', () => {
+                    this.customArrayInput.value = '';
+                    this.hideInputError();
+                });
+
+                this.customArrayInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !this.isSort) {
+                        this.loadCustomArray();
+                    }
+                });
+
+                this.customArrayInput.addEventListener('input', () => {
+                    this.hideInputError();
+                });
+
+                // Step mode listeners
+                this.stepModeToggle.addEventListener('click', () => {
+                    this.toggleStepMode();
+                });
+
+                this.stepPrevBtn.addEventListener('click', () => {
+                    this.updateStepInfo('Previous step functionality coming soon...');
+                });
+
+                this.stepNextBtn.addEventListener('click', () => {
+                    this.updateStepInfo('Next step functionality coming soon...');
+                });
+
+                this.stepPlayBtn.addEventListener('click', () => {
+                    this.updateStepInfo('Auto-play in step mode...');
+                });
+
+                this.stepPauseBtn.addEventListener('click', () => {
+                    this.updateStepInfo('Paused step mode');
+                });
+
+                this.stepResetBtn.addEventListener('click', () => {
+                    if (!this.isSort) {
+                        this.array = [...this.originalArray];
+                        this.renderArray();
+                        this.resetStats();
+                        this.updateStepInfo('Reset to original array');
+                    }
+                });
+
+                // Preset array listeners
+                Object.entries(this.presetButtons).forEach(([type, button]) => {
+                    button.addEventListener('click', () => {
+                        if (!this.isSort) this.loadPresetArray(type);
+                    });
+                });
+            }
+
+            generateArray() {
+                this.array = [];
+                this.resetStats();
+                
+                for (let i = 0; i < this.arraySize; i++) {
+                    this.array.push(Math.floor(Math.random() * 90) + 10);
+                }
+                
+                this.originalArray = [...this.array];
+                this.customArrayInput.value = '';
+                this.hideInputError();
+                this.updateArrayStatistics();
+                this.renderArray();
+                
+                if (this.stepMode) {
+                    this.updateStepInfo("Array generated. Ready to start sorting...");
+                }
+            }
+
+            loadPresetArray(type) {
+                this.array = [];
+                this.resetStats();
+
+                switch (type) {
+                    case 'random':
+                        this.generateArray();
+                        return;
+                    
+                    case 'reverse':
+                        for (let i = this.arraySize; i > 0; i--) {
+                            this.array.push(Math.floor(i * 90 / this.arraySize) + 10);
+                        }
+                        break;
+                    
+                    case 'nearlySorted':
+                        for (let i = 1; i <= this.arraySize; i++) {
+                            this.array.push(Math.floor(i * 90 / this.arraySize) + 10);
+                        }
+                        // Shuffle a few elements
+                        for (let i = 0; i < Math.floor(this.arraySize * 0.1); i++) {
+                            const idx1 = Math.floor(Math.random() * this.arraySize);
+                            const idx2 = Math.floor(Math.random() * this.arraySize);
+                            [this.array[idx1], this.array[idx2]] = [this.array[idx2], this.array[idx1]];
+                        }
+                        break;
+                    
+                    case 'fewUnique':
+                        const uniqueValues = [20, 40, 60, 80, 100];
+                        for (let i = 0; i < this.arraySize; i++) {
+                            this.array.push(uniqueValues[Math.floor(Math.random() * uniqueValues.length)]);
+                        }
+                        break;
+                    
+                    case 'mountain':
+                        const mid = Math.floor(this.arraySize / 2);
+                        for (let i = 0; i < this.arraySize; i++) {
+                            const distance = Math.abs(i - mid);
+                            this.array.push(Math.max(10, 100 - distance * 3));
+                        }
+                        break;
+                    
+                    case 'valley':
+                        const center = Math.floor(this.arraySize / 2);
+                        for (let i = 0; i < this.arraySize; i++) {
+                            const distance = Math.abs(i - center);
+                            this.array.push(Math.min(100, 10 + distance * 3));
+                        }
+                        break;
+                }
+
+                this.originalArray = [...this.array];
+                this.customArrayInput.value = '';
+                this.hideInputError();
+                this.updateArrayStatistics();
+                this.renderArray();
+                this.showSuccessMessage(`Loaded ${type} preset array!`);
+                
+                if (this.stepMode) {
+                    this.updateStepInfo(`Loaded ${type} array. Ready to start sorting...`);
+                }
+            }
+
+            loadCustomArray() {
+                const input = this.customArrayInput.value.trim();
+                
+                if (!input) {
+                    this.showInputError('Please enter some numbers');
+                    return;
+                }
+                
+                try {
+                    const numbers = input.split(',').map(str => {
+                        const num = parseFloat(str.trim());
+                        if (isNaN(num)) {
+                            throw new Error(`"${str.trim()}" is not a valid number`);
+                        }
+                        return num;
+                    });
+                    
+                    const validation = this.validateCustomArray(numbers);
+                    if (!validation.isValid) {
+                        this.showInputError(validation.error);
+                        return;
+                    }
+                    
+                    this.array = numbers.map(num => {
+                        return Math.max(10, Math.min(100, Math.abs(num)));
+                    });
+                    
+                    this.arraySize = this.array.length;
+                    this.arraySizeSlider.value = this.arraySize;
+                    this.arraySizeValue.textContent = this.arraySize;
+                    this.originalArray = [...this.array];
+                    
+                    this.resetStats();
+                    this.updateArrayStatistics();
+                    this.renderArray();
+                    this.hideInputError();
+                    
+                    this.showSuccessMessage(`Loaded ${this.array.length} numbers successfully!`);
+                    
+                    if (this.stepMode) {
+                        this.updateStepInfo(`Loaded custom array. Ready to start sorting...`);
+                    }
+                    
+                } catch (error) {
+                    this.showInputError(error.message);
+                }
+            }
+
+            validateCustomArray(numbers) {
+                if (numbers.length === 0) {
+                    return { isValid: false, error: 'Array cannot be empty' };
+                }
+                
+                if (numbers.length > 100) {
+                    return { isValid: false, error: 'Maximum 100 numbers allowed' };
+                }
+                
+                if (numbers.length < 2) {
+                    return { isValid: false, error: 'At least 2 numbers required for sorting' };
+                }
+                
+                return { isValid: true };
+            }
+
+            updateArrayStatistics() {
+                const stats = this.calculateStatistics();
+                
+                this.statElements.textContent = stats.count;
+                this.statMin.textContent = stats.min;
+                this.statMax.textContent = stats.max;
+                this.statAvg.textContent = stats.avg.toFixed(1);
+                this.statMedian.textContent = stats.median;
+                this.statDuplicates.textContent = stats.duplicateCount;
+
+                if (stats.duplicateCount > 0) {
+                    this.duplicatesList.classList.remove('hidden');
+                    this.duplicatesContent.textContent = stats.duplicateValues.join(', ');
+                } else {
+                    this.duplicatesList.classList.add('hidden');
+                }
+
+                this.updateDuplicateHighlighting();
+            }
+
+            calculateStatistics() {
+                if (this.array.length === 0) {
+                    return {
+                        count: 0, min: '-', max: '-', avg: 0, median: '-',
+                        duplicateCount: 0, duplicateValues: []
+                    };
+                }
+
+                const sorted = [...this.array].sort((a, b) => a - b);
+                const count = this.array.length;
+                const min = sorted[0];
+                const max = sorted[count - 1];
+                const avg = this.array.reduce((sum, val) => sum + val, 0) / count;
+                const median = count % 2 === 0 
+                    ? (sorted[count / 2 - 1] + sorted[count / 2]) / 2
+                    : sorted[Math.floor(count / 2)];
+
+                // Find duplicates
+                const valueCount = {};
+                const duplicateValues = [];
+                let duplicateCount = 0;
+
+                this.array.forEach(val => {
+                    valueCount[val] = (valueCount[val] || 0) + 1;
+                });
+
+                Object.entries(valueCount).forEach(([value, count]) => {
+                    if (count > 1) {
+                        duplicateValues.push(parseInt(value));
+                        duplicateCount += count - 1;
+                    }
+                });
+
+                return {
+                    count, min, max, avg, median,
+                    duplicateCount, duplicateValues: duplicateValues.sort((a, b) => a - b)
+                };
+            }
+
+            updateDuplicateHighlighting() {
+                this.duplicateIndices.clear();
+
+                const valueIndices = {};
+                this.array.forEach((value, index) => {
+                    if (!valueIndices[value]) {
+                        valueIndices[value] = [];
+                    }
+                    valueIndices[value].push(index);
+                });
+
+                Object.entries(valueIndices).forEach(([value, indices]) => {
+                    if (indices.length > 1) {
+                        this.duplicateIndices.set(parseInt(value), indices);
+                    }
+                });
+            }
+
+            renderArray() {
+                this.arrayContainer.innerHTML = '';
+                const containerWidth = this.arrayContainer.clientWidth;
+                const barWidth = Math.max(2, (containerWidth - this.arraySize * 2) / this.arraySize);
+
+                this.array.forEach((value, index) => {
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'relative flex flex-col items-center';
+                    barContainer.style.width = `${barWidth}px`;
+
+                    const bar = document.createElement('div');
+                    
+                    // Check if this is a duplicate value
+                    const isDuplicate = Array.from(this.duplicateIndices.values())
+                        .some(indices => indices.includes(index));
+                    
+                    if (isDuplicate) {
+                        bar.className = 'bg-gradient-to-t from-orange-400 to-orange-600 dark:from-orange-500 dark:to-orange-700 transition-all duration-300 rounded-t-sm border-2 border-orange-300 dark:border-orange-400';
+                    } else {
+                        bar.className = 'bg-gradient-to-t from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 transition-all duration-300 rounded-t-sm';
+                    }
+                    
+                    bar.style.height = `${value * 3}px`;
+                    bar.style.width = '100%';
+                    bar.id = `bar-${index}`;
+                    bar.title = `Value: ${value}${isDuplicate ? ' (Duplicate)' : ''}`;
+
+                    // Add value label if enabled
+                    if (this.showValues) {
+                        const label = document.createElement('div');
+                        label.className = 'text-xs font-bold text-gray-800 dark:text-white mt-1 text-center';
+                        label.style.fontSize = Math.max(8, Math.min(12, barWidth / 3)) + 'px';
+                        label.textContent = value;
+                        label.id = `label-${index}`;
+                        barContainer.appendChild(label);
+                    }
+
+                    barContainer.appendChild(bar);
+                    this.arrayContainer.appendChild(barContainer);
+                });
+            }
+
+            async highlightBars(indices, color = 'bg-gradient-to-t from-yellow-400 to-yellow-600') {
+                indices.forEach(index => {
+                    const bar = document.getElementById(`bar-${index}`);
+                    if (bar) {
+                        bar.className = `${color} transition-all duration-300 rounded-t-sm animate-pulse-slow`;
+                    }
+                });
+            }
+
+            async resetBarColors(indices) {
+                indices.forEach(index => {
+                    const bar = document.getElementById(`bar-${index}`);
+                    if (bar) {
+                        const isDuplicate = Array.from(this.duplicateIndices.values())
+                            .some(indicesArray => indicesArray.includes(index));
+                        
+                        if (isDuplicate) {
+                            bar.className = 'bg-gradient-to-t from-orange-400 to-orange-600 dark:from-orange-500 dark:to-orange-700 transition-all duration-300 rounded-t-sm border-2 border-orange-300 dark:border-orange-400';
+                        } else {
+                            bar.className = 'bg-gradient-to-t from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 transition-all duration-300 rounded-t-sm';
+                        }
+                    }
+                });
+            }
+
+            async markAsSorted(indices) {
+                indices.forEach(index => {
+                    const bar = document.getElementById(`bar-${index}`);
+                    if (bar) {
+                        bar.className = 'bg-gradient-to-t from-green-400 to-green-600 transition-all duration-300 rounded-t-sm';
+                    }
+                });
+            }
+
+            async swap(i, j) {
+                if (this.soundEnabled) this.playSwapSound();
+                
+                await this.highlightBars([i, j], 'bg-gradient-to-t from-red-400 to-red-600');
+                await this.sleep(this.speed);
+                
+                [this.array[i], this.array[j]] = [this.array[j], this.array[i]];
+                
+                const bar1 = document.getElementById(`bar-${i}`);
+                const bar2 = document.getElementById(`bar-${j}`);
+                if (bar1 && bar2) {
+                    bar1.style.height = `${this.array[i] * 3}px`;
+                    bar2.style.height = `${this.array[j] * 3}px`;
+                    
+                    // Update value labels if they exist
+                    if (this.showValues) {
+                        const label1 = document.getElementById(`label-${i}`);
+                        const label2 = document.getElementById(`label-${j}`);
+                        
+                        if (label1) label1.textContent = this.array[i];
+                        if (label2) label2.textContent = this.array[j];
+                    }
+                    
+                    bar1.classList.add('animate-bounce-subtle');
+                    bar2.classList.add('animate-bounce-subtle');
+                }
+                
+                this.swaps++;
+                this.swapsEl.textContent = this.swaps;
+                
+                await this.sleep(this.speed);
+                await this.resetBarColors([i, j]);
+            }
+
+            async compare(i, j) {
+                this.comparisons++;
+                this.comparisonsEl.textContent = this.comparisons;
+                await this.highlightBars([i, j], 'bg-gradient-to-t from-purple-400 to-purple-600');
+                await this.sleep(this.speed / 2);
+                await this.resetBarColors([i, j]);
+                return this.array[i] > this.array[j];
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            playSwapSound() {
+                if (!this.soundEnabled) return;
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                } catch (error) {
+                    // Silently fail if audio context is not available
+                }
+            }
+
+            resetStats() {
+                this.comparisons = 0;
+                this.swaps = 0;
+                this.comparisonsEl.textContent = '0';
+                this.swapsEl.textContent = '0';
+                this.timeElapsedEl.textContent = '0s';
+                if (this.timeInterval) {
+                    clearInterval(this.timeInterval);
+                    this.timeInterval = null;
+                }
+            }
+
+            startTimer() {
+                this.startTime = Date.now();
+                this.timeInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    this.timeElapsedEl.textContent = `${elapsed}s`;
+                }, 1000);
+            }
+
+            stopTimer() {
+                if (this.timeInterval) {
+                    clearInterval(this.timeInterval);
+                    this.timeInterval = null;
+                }
+            }
+
+            toggleStepMode() {
+                this.stepMode = !this.stepMode;
+                
+                if (this.stepMode) {
+                    this.stepModeToggle.textContent = '🎯 Disable Step Mode';
+                    this.stepModeToggle.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                    this.stepModeToggle.classList.add('bg-red-500', 'hover:bg-red-600');
+                    this.stepControls.classList.remove('hidden');
+                    this.stepInfo.classList.remove('hidden');
+                    this.updateStepInfo('Step mode enabled. Use controls to navigate through sorting steps.');
+                } else {
+                    this.stepModeToggle.textContent = '🎯 Enable Step Mode';
+                    this.stepModeToggle.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    this.stepModeToggle.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                    this.stepControls.classList.add('hidden');
+                    this.stepInfo.classList.add('hidden');
+                }
+            }
+
+            updateStepInfo(info) {
+                this.currentStepInfo = info;
+                if (this.currentStep) {
+                    this.currentStep.textContent = info;
+                }
+            }
+
+            async startSorting() {
+                if (this.isSort) return;
+
+                this.isSort = true;
+                this.sortBtn.textContent = '⏸️ Sorting...';
+                this.sortBtn.disabled = true;
+                this.generateBtn.disabled = true;
+                this.loadCustomBtn.disabled = true;
+                this.customArrayInput.disabled = true;
+
+                Object.values(this.presetButtons).forEach(btn => btn.disabled = true);
+
+                this.resetStats();
+                this.startTimer();
+
+                const algorithm = this.algorithmSelect.value;
+
+                try {
+                    switch (algorithm) {
+                        case 'bubble':
+                            await this.bubbleSort();
+                            break;
+                        case 'selection':
+                            await this.selectionSort();
+                            break;
+                        case 'insertion':
+                            await this.insertionSort();
+                            break;
+                        case 'quick':
+                            await this.quickSort(0, this.array.length - 1);
+                            break;
+                        case 'merge':
+                            await this.mergeSort();
+                            break;
+                        case 'heap':
+                            await this.heapSort();
+                            break;
+                        case 'radix':
+                            await this.radixSort();
+                            break;
+                    }
+
+                    await this.markAsSorted(Array.from({length: this.array.length}, (_, i) => i));
+                    this.stopTimer();
+                    this.showSuccessMessage('Sorting complete!');
+                } finally {
+                    this.isSort = false;
+                    this.sortBtn.textContent = '▶️ Start Sorting';
+                    this.sortBtn.disabled = false;
+                    this.generateBtn.disabled = false;
+                    this.loadCustomBtn.disabled = false;
+                    this.customArrayInput.disabled = false;
+
+                    Object.values(this.presetButtons).forEach(btn => btn.disabled = false);
+                }
+            }
+
+            async bubbleSort() {
+                const n = this.array.length;
+                for (let i = 0; i < n - 1; i++) {
+                    for (let j = 0; j < n - i - 1; j++) {
+                        if (await this.compare(j, j + 1)) {
+                            await this.swap(j, j + 1);
+                        }
+                    }
+                    await this.markAsSorted([n - i - 1]);
+                }
+            }
+
+            async selectionSort() {
+                const n = this.array.length;
+                for (let i = 0; i < n - 1; i++) {
+                    let minIdx = i;
+                    await this.highlightBars([i], 'bg-gradient-to-t from-orange-400 to-orange-600');
+                    
+                    for (let j = i + 1; j < n; j++) {
+                        if (await this.compare(minIdx, j)) {
+                            await this.resetBarColors([minIdx]);
+                            minIdx = j;
+                            await this.highlightBars([minIdx], 'bg-gradient-to-t from-orange-400 to-orange-600');
+                        }
+                    }
+                    
+                    if (minIdx !== i) {
+                        await this.swap(i, minIdx);
+                    }
+                    await this.resetBarColors([minIdx]);
+                    await this.markAsSorted([i]);
+                }
+            }
+
+            async insertionSort() {
+                const n = this.array.length;
+                for (let i = 1; i < n; i++) {
+                    let key = this.array[i];
+                    let j = i - 1;
+                    
+                    await this.highlightBars([i], 'bg-gradient-to-t from-cyan-400 to-cyan-600');
+                    
+                    while (j >= 0 && this.array[j] > key) {
+                        this.array[j + 1] = this.array[j];
+                        const bar = document.getElementById(`bar-${j + 1}`);
+                        const label = document.getElementById(`label-${j + 1}`);
+                        if (bar) {
+                            bar.style.height = `${this.array[j + 1] * 3}px`;
+                        }
+                        if (label && this.showValues) {
+                            label.textContent = this.array[j + 1];
+                        }
+                        
+                        this.swaps++;
+                        this.swapsEl.textContent = this.swaps;
+                        await this.sleep(this.speed);
+                        j--;
+                    }
+                    
+                    this.array[j + 1] = key;
+                    const bar = document.getElementById(`bar-${j + 1}`);
+                    const label = document.getElementById(`label-${j + 1}`);
+                    if (bar) {
+                        bar.style.height = `${key * 3}px`;
+                    }
+                    if (label && this.showValues) {
+                        label.textContent = key;
+                    }
+                    
+                    await this.resetBarColors([i]);
+                    await this.sleep(this.speed);
+                }
+            }
+
+            async quickSort(low, high) {
+                if (low < high) {
+                    const pi = await this.partition(low, high);
+                    await this.quickSort(low, pi - 1);
+                    await this.quickSort(pi + 1, high);
+                }
+            }
+
+            async partition(low, high) {
+                const pivot = this.array[high];
+                await this.highlightBars([high], 'bg-gradient-to-t from-indigo-400 to-indigo-600');
+                
+                let i = low - 1;
+                
+                for (let j = low; j < high; j++) {
+                    if (await this.compare(high, j)) {
+                        i++;
+                        if (i !== j) {
+                            await this.swap(i, j);
+                        }
+                    }
+                }
+                
+                await this.swap(i + 1, high);
+                await this.resetBarColors([high]);
+                return i + 1;
+            }
+
+            async mergeSort(arr = this.array, left = 0, right = this.array.length - 1) {
+                if (left < right) {
+                    const mid = Math.floor((left + right) / 2);
+                    
+                    await this.highlightBars([mid], 'bg-gradient-to-t from-pink-400 to-pink-600');
+                    await this.sleep(this.speed);
+                    
+                    await this.mergeSort(arr, left, mid);
+                    await this.mergeSort(arr, mid + 1, right);
+                    await this.merge(arr, left, mid, right);
+                }
+            }
+
+            async merge(arr, left, mid, right) {
+                const leftArr = arr.slice(left, mid + 1);
+                const rightArr = arr.slice(mid + 1, right + 1);
+                
+                let i = 0, j = 0, k = left;
+                
+                while (i < leftArr.length && j < rightArr.length) {
+                    await this.highlightBars([k], 'bg-gradient-to-t from-cyan-400 to-cyan-600');
+                    
+                    if (leftArr[i] <= rightArr[j]) {
+                        arr[k] = leftArr[i];
+                        i++;
+                    } else {
+                        arr[k] = rightArr[j];
+                        j++;
+                    }
+                    
+                    const bar = document.getElementById(`bar-${k}`);
+                    const label = document.getElementById(`label-${k}`);
+                    if (bar) {
+                        bar.style.height = `${arr[k] * 3}px`;
+                    }
+                    if (label && this.showValues) {
+                        label.textContent = arr[k];
+                    }
+                    
+                    this.swaps++;
+                    this.swapsEl.textContent = this.swaps;
+                    await this.sleep(this.speed);
+                    k++;
+                }
+                
+                while (i < leftArr.length) {
+                    arr[k] = leftArr[i];
+                    const bar = document.getElementById(`bar-${k}`);
+                    const label = document.getElementById(`label-${k}`);
+                    if (bar) {
+                        bar.style.height = `${arr[k] * 3}px`;
+                    }
+                    if (label && this.showValues) {
+                        label.textContent = arr[k];
+                    }
+                    i++;
+                    k++;
+                }
+                
+                while (j < rightArr.length) {
+                    arr[k] = rightArr[j];
+                    const bar = document.getElementById(`bar-${k}`);
+                    const label = document.getElementById(`label-${k}`);
+                    if (bar) {
+                        bar.style.height = `${arr[k] * 3}px`;
+                    }
+                    if (label && this.showValues) {
+                        label.textContent = arr[k];
+                    }
+                    j++;
+                    k++;
+                }
+                
+                await this.resetBarColors(Array.from({length: right - left + 1}, (_, i) => left + i));
+            }
+
+            async heapSort() {
+                const n = this.array.length;
+                
+                // Build max heap
+                for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+                    await this.heapify(n, i);
+                }
+                
+                // Extract elements from heap one by one
+                for (let i = n - 1; i > 0; i--) {
+                    await this.swap(0, i);
+                    await this.markAsSorted([i]);
+                    await this.heapify(i, 0);
+                }
+                await this.markAsSorted([0]);
+            }
+
+            async heapify(n, i) {
+                let largest = i;
+                const left = 2 * i + 1;
+                const right = 2 * i + 2;
+                
+                await this.highlightBars([i], 'bg-gradient-to-t from-purple-400 to-purple-600');
+                
+                if (left < n && await this.compare(left, largest)) {
+                    largest = left;
+                }
+                
+                if (right < n && await this.compare(right, largest)) {
+                    largest = right;
+                }
+                
+                if (largest !== i) {
+                    await this.swap(i, largest);
+                    await this.heapify(n, largest);
+                }
+                
+                await this.resetBarColors([i]);
+            }
+
+            async radixSort() {
+                const max = Math.max(...this.array);
+                const maxDigits = max.toString().length;
+                
+                for (let digit = 0; digit < maxDigits; digit++) {
+                    await this.countingSort(digit);
+                }
+            }
+
+            async countingSort(digit) {
+                const n = this.array.length;
+                const output = new Array(n);
+                const count = new Array(10).fill(0);
+                
+                // Count occurrences of each digit
+                for (let i = 0; i < n; i++) {
+                    const digitValue = Math.floor(this.array[i] / Math.pow(10, digit)) % 10;
+                    count[digitValue]++;
+                    await this.highlightBars([i], 'bg-gradient-to-t from-teal-400 to-teal-600');
+                    await this.sleep(this.speed / 4);
+                    await this.resetBarColors([i]);
+                }
+                
+                // Change count[i] to actual position
+                for (let i = 1; i < 10; i++) {
+                    count[i] += count[i - 1];
+                }
+                
+                // Build output array
+                for (let i = n - 1; i >= 0; i--) {
+                    const digitValue = Math.floor(this.array[i] / Math.pow(10, digit)) % 10;
+                    output[count[digitValue] - 1] = this.array[i];
+                    count[digitValue]--;
+                    
+                    await this.highlightBars([i], 'bg-gradient-to-t from-amber-400 to-amber-600');
+                    await this.sleep(this.speed);
+                    await this.resetBarColors([i]);
+                }
+                
+                // Copy output array to original array
+                for (let i = 0; i < n; i++) {
+                    this.array[i] = output[i];
+                    const bar = document.getElementById(`bar-${i}`);
+                    const label = document.getElementById(`label-${i}`);
+                    if (bar) {
+                        bar.style.height = `${this.array[i] * 3}px`;
+                    }
+                    if (label && this.showValues) {
+                        label.textContent = this.array[i];
+                    }
+                    await this.sleep(this.speed / 2);
+                }
+            }
+
+            updateAlgorithmInfo() {
+                const algorithm = this.algorithmSelect.value;
+                const descriptions = {
+                    bubble: {
+                        name: "Bubble Sort",
+                        description: "Compares each pair of adjacent items and swaps them if they are in the wrong order. Heavier elements 'bubble' to the end.",
+                        timeComplexity: "O(n²)",
+                        spaceComplexity: "O(1)",
+                        stable: "Yes"
+                    },
+                    selection: {
+                        name: "Selection Sort",
+                        description: "Repeatedly finds the minimum element from the unsorted part and places it at the beginning.",
+                        timeComplexity: "O(n²)",
+                        spaceComplexity: "O(1)",
+                        stable: "No"
+                    },
+                    insertion: {
+                        name: "Insertion Sort",
+                        description: "Builds the final sorted array one item at a time by inserting elements into the correct position.",
+                        timeComplexity: "O(n²)",
+                        spaceComplexity: "O(1)",
+                        stable: "Yes"
+                    },
+                    quick: {
+                        name: "Quick Sort",
+                        description: "A divide-and-conquer algorithm that picks an element as a pivot and partitions the given array around the picked pivot.",
+                        timeComplexity: "O(n log n) average, O(n²) worst",
+                        spaceComplexity: "O(log n)",
+                        stable: "No"
+                    },
+                    merge: {
+                        name: "Merge Sort",
+                        description: "Divides the array into smaller subarrays, sorts them, and then merges them back together. Uses a divide-and-conquer approach.",
+                        timeComplexity: "O(n log n)",
+                        spaceComplexity: "O(n)",
+                        stable: "Yes"
+                    },
+                    heap: {
+                        name: "Heap Sort",
+                        description: "Builds a max heap from the array, then repeatedly extracts the maximum element and places it at the end.",
+                        timeComplexity: "O(n log n)",
+                        spaceComplexity: "O(1)",
+                        stable: "No"
+                    },
+                    radix: {
+                        name: "Radix Sort",
+                        description: "Non-comparison based sorting algorithm that sorts by individual digits from least to most significant.",
+                        timeComplexity: "O(d × (n + k))",
+                        spaceComplexity: "O(n + k)",
+                        stable: "Yes"
+                    }
+                };
+
+                const info = descriptions[algorithm];
+                this.algorithmDescription.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-lg text-gray-800 dark:text-white mb-2">${info.name}</h4>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">${info.description}</p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="font-medium">Time Complexity:</span>
+                                <span class="text-blue-600 dark:text-blue-400">${info.timeComplexity}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Space Complexity:</span>
+                                <span class="text-green-600 dark:text-green-400">${info.spaceComplexity}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Stable:</span>
+                                <span class="text-purple-600 dark:text-purple-400">${info.stable}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            showInputError(message) {
+                this.inputError.textContent = message;
+                this.inputError.classList.remove('hidden');
+                this.customArrayInput.classList.add('border-red-500', 'focus:ring-red-500', 'animate-shake');
+                setTimeout(() => {
+                    this.customArrayInput.classList.remove('animate-shake');
+                }, 500);
+            }
+
+            hideInputError() {
+                this.inputError.classList.add('hidden');
+                this.customArrayInput.classList.remove('border-red-500', 'focus:ring-red-500');
+            }
+
+            showSuccessMessage(message) {
+                const successDiv = document.createElement('div');
+                successDiv.className = 'mt-1 text-sm text-green-600 dark:text-green-400 animate-pulse-slow';
+                successDiv.textContent = message;
+                
+                this.inputError.parentNode.insertBefore(successDiv, this.inputError.nextSibling);
+                
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.parentNode.removeChild(successDiv);
+                    }
+                }, 3000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdvancedSortingVisualizer();
+        });
+    </script>
+
+    <style>
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</body>
+</html>
